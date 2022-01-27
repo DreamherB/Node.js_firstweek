@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <!-- JQuery -->
+    <script
+    src="https://code.jquery.com/jquery-3.5.1.js"
+    integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+    crossorigin="anonymous"
+  ></script>
+    <!-- Ajax -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <!-- Bulma link -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    
+    <title>메인페이지(게시글 목록)</title>
+
+    <script>
+        
+        /*게시글 조회 페이지로 해당 게시글 정보 전달*/
+
+        function postingDetail(id) {
+
+            let id_give = id
+
+            $.ajax({
+            type: "POST",
+            url: "/api/detail",
+            data: {
+              id: id_give,
+            },
+            error: function (xhr, status, error) {
+                    // 에러 시 코드
+            },
+            success: function (response) {
+              // 성공 시 코드, 여기선 무언가 줄 필요는 없음
+            }
+        });
+
+        }
+
+
+        /* 게시글 메인 페이지에 나열 */
+    $(document).ready(function () {
+
+        $('#postingsList').empty();
+    
+
+            $.ajax({
+                type: "GET",
+                url: '/api/showPostings',
+                data: {},
+                error: function (xhr, status, error) {
+                    // 에러 시 코드
+                },
+                success: function (response) {
+
+                    let postings = response.postings;
+                
+                    for (let i = postings.length - 1; -1 < i; i--) {
+                        let title = postings[i].title
+                        let name = postings[i]['name'] // json의 값은 이런 두가지 형태로 읽을 수 있음
+                        let text = postings[i]['text']
+                        let date = postings[i]['date']
+                        let id = postings[i]._id
+                        
+
+                        let temp_html = `
+                        <div class="card">
+                            <div class="card-content">
+                            <div class="media">
+                                <div class="media-left">
+
+                                </div>
+                                <div class="media-content">
+                                    <p class="title is-4"><a href="/detail.html" onclick="postingDetail('${id}')">${title}</a></p>
+                                <p class="subtitle is-6">@${name}</p>
+                                </div>
+                            </div>
+                        
+                            <div class="content">
+                                ${text}
+                                <br>
+                                ${date}
+                            </div>
+                            </div>
+                        </div>`
+
+                        $('#postingsList').append(temp_html);
+
+                    }
+}
+                
+            })
+})
+
+    </script>
+    
+</head>
+
+  <body>
+<!-- 메인 네비게이션 바 구역 -->
+
+<nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/">
+        <h2><strong>Hoon's Posting</strong></h2>
+      </a>
+  
+      <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+  
+    <div id="navbarBasicExample" class="navbar-menu">
+      <div class="navbar-start">
+        <a class="navbar-item" href = "/new_posting.html">
+          게시글 작성
+        </a>
+      </div>
+  
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <div class="buttons">
+            <a class="button is-primary">
+              <strong>Sign up</strong>
+            </a>
+            <a class="button is-light">
+              Log in
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <hr>
+
+  <!-- 게시글 노출 구역 -->
+  <div  id="postingsList">
+
+</div>
+  </body>
+</html>

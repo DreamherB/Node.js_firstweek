@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"
+        integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <!-- Ajax -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <!-- Bulma link -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+
+    <title>메인페이지(게시글 목록)</title>
+
+
+    <script>
+
+        /* 비밀번호 비교에 쓸 전역 변수 */
+
+        let pwd = ""
+
+        /* 수정하려는 게시글 정보 불러오기 */
+
+        $(document).ready(function () {
+
+            $.ajax({
+                type: "GET",
+                url: '/api/updateInfo',
+                data: {},
+                error: function (xhr, status, error) {
+                    // 에러 시 코드
+                },
+                success: function (response) {
+                    
+                    let postingInfo = response.postingInfo; // response 안에 postingInfo라는 값을 받아 오는 개념이라서 이렇게 작성
+                    
+                    let title = postingInfo[0].title
+                    let name = postingInfo[0].name
+                    let text = postingInfo[0].text
+                    let date = postingInfo[0].date
+                    let id = postingInfo[0]._id // 게시글은 하나만 보므로 인덱스 0!
+                    pwd = postingInfo[0].pwd
+
+
+                    let temp_html = `<input class="input" type="text" placeholder="제목" id="title" value = "${title}">
+                        <input class="input" type="text" id="name" value = "${name}" readonly>
+                        <textarea class="textarea" placeholder="게시글을 작성해주세요." id="text">${text}</textarea>
+                        <input id='pwd' type='password' placeholder="비밀번호 최대 10자리" maxlength="10">
+                        <button class="button is-primary" onclick="update_posting('${id}')">수정 완료</button>
+                        <button class="button is-success" onclick="delete_posting('${id}')">삭제하기</button>
+                        <button class="button" href= "history.back()">취소</button>`
+
+                    $('#postingsList').append(temp_html); // 위에서 onclick="update_posting('${id},${pwd}')" 처럼 쓸 수는 없나?
+
+                }
+            })
+        });
+
+
+        /* 게시글 수정내용 업데이트 */ //  배포 / 시간되면 css 재조정 + ejs 사용해보기
+
+        function update_posting(id) {
+
+            let input_pwd = $('#pwd').val()
+
+            if (input_pwd === pwd) {
+
+                let new_title = $('#title').val() // 불러와진 게시글에 값이 입력되고 난 후의 값을 받아야 하기에 버튼을 클릭하는 시점에 title과 text에 입력된 값을 받아오기, 이때는 이미 게시글이 만들어져있으므로 해당 게시글 id 이용 가능!
+                let new_text = $('#text').val()
+
+                $.ajax({
+                    type: "PUT",
+                    url: '/api/updatePosting',
+                    data: {
+                        id,
+                        new_title,
+                        new_text,
+                    },
+                    error: function (xhr, status, error) {
+                        alert(`${status}오류가 발생하였습니다.`);
+                    },
+
+                    success: function (response) {
+                        alert("수정이 완료되었습니다.");
+                        location.href = "/"
+                    },
+                });
+
+            } else if (input_pwd === "") {
+                alert('비밀번호를 입력해주세요.');
+            } else {
+                alert('비밀번호가 일치하지 않습니다.');
+            }
+        };
+
+        function delete_posting(id) {
+
+            let input_pwd = $('#pwd').val()
+
+if (input_pwd === pwd) {
+
+    $.ajax({
+        type: "DELETE",
+        url: '/api/deletePosting',
+        data: {
+            id,
+        },
+        error: function (xhr, status, error) {
+            alert(`${status}오류가 발생하였습니다.`);
+        },
+
+        success: function (response) {
+            alert("삭제가 완료되었습니다.");
+            location.href = "/"
+        },
+    });
+
+} else if (input_pwd === "") {
+    alert('비밀번호를 입력해주세요.');
+} else {
+    alert('비밀번호가 일치하지 않습니다.');
+}
+
+        }
+
+    </script>
+
+</head>
+
+<body>
+
+    <!-- 메인 네비게이션 바 구역 -->
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="/">
+                <h2><strong>Hoon's Posting</strong></h2>
+              </a>
+
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" href="/new_posting.html">
+                    게시글 작성
+                </a>
+            </div>
+
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <div class="buttons">
+                        <a class="button is-primary">
+                            <strong>Sign up</strong>
+                        </a>
+                        <a class="button is-light">
+                            Log in
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <hr>
+
+    <!-- 게시글 작성 구역 -->
+    <div id="postingsList">
+
+
+    </div>
+</body>
+
+</html>
